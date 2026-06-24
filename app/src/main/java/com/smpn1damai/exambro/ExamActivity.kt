@@ -15,7 +15,6 @@ import android.webkit.*
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.WindowCompat
 import com.smpn1damai.exambro.databinding.ActivityExamBinding
 
 class ExamActivity : AppCompatActivity() {
@@ -25,12 +24,22 @@ class ExamActivity : AppCompatActivity() {
     private lateinit var batteryReceiver: BroadcastReceiver
     private var cheatCount = 0
     private var lastToast: Toast? = null
-    private var isFirstLaunch = true // Deteksi awal buka aplikasi
+    private var isFirstLaunch = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        WindowCompat.setDecorFitsSystemWindows(window, false)
+        // --- JURUS LAYAR PENUH (IMMERSIVE MODE) ---
+        @Suppress("DEPRECATION")
+        window.decorView.systemUiVisibility = (
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                        or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_FULLSCREEN
+                )
+        // Anti Screenshot & Rekam Layar
         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
 
         binding = ActivityExamBinding.inflate(layoutInflater)
@@ -40,18 +49,21 @@ class ExamActivity : AppCompatActivity() {
 
         setupWebView(intent.getStringExtra("TARGET_URL") ?: "https://google.com")
 
-        startLockTask() // Langsung hajar minta pin
+        startLockTask()
         setupBatteryAndNetwork()
 
-        binding.btnKeluar.setOnClickListener {
-            binding.exitOverlay.visibility = View.VISIBLE
-            binding.etPassword.requestFocus()
+        // Tombol Keluar Floating dengan Efek Animasi
+        binding.btnKeluarFloat.setOnClickListener { view ->
+            view.animate().scaleX(0.85f).scaleY(0.85f).setDuration(100).withEndAction {
+                view.animate().scaleX(1f).scaleY(1f).setDuration(100).start()
+                binding.exitOverlay.visibility = View.VISIBLE
+                binding.etPassword.requestFocus()
+            }.start()
         }
 
         binding.btnBatalKeluar.setOnClickListener {
             val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
             if (am.lockTaskModeState == ActivityManager.LOCK_TASK_MODE_NONE) {
-                // Kalo lagi dihukum karena nolak pin, kagak boleh klik Batal!
                 Toast.makeText(this, "MASUKKAN SANDI! ANDA MELANGGAR ATURAN!", Toast.LENGTH_SHORT).show()
             } else {
                 binding.exitOverlay.visibility = View.GONE
@@ -70,7 +82,7 @@ class ExamActivity : AppCompatActivity() {
             override fun handleOnBackPressed() {
                 val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
                 if (am.lockTaskModeState == ActivityManager.LOCK_TASK_MODE_NONE) {
-                    triggerMaxAlarm() // Kalo mau kabur pas dihukum, hajar lagi alarmnya
+                    triggerMaxAlarm()
                 } else if (binding.exitOverlay.visibility == View.VISIBLE) {
                     binding.exitOverlay.visibility = View.GONE
                 } else {
@@ -82,26 +94,36 @@ class ExamActivity : AppCompatActivity() {
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
+
+        // Pastikan layar penuh tetap aktif saat aplikasi kembali fokus
         if (hasFocus) {
+            @Suppress("DEPRECATION")
+            window.decorView.systemUiVisibility = (
+                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                            or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                            or View.SYSTEM_UI_FLAG_FULLSCREEN
+                    )
+
             val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
             if (am.lockTaskModeState == ActivityManager.LOCK_TASK_MODE_NONE) {
                 if (isFirstLaunch) {
-                    isFirstLaunch = false // Abaikan kedipan fokus pertama saat dialog sistem muncul
+                    isFirstLaunch = false
                 } else {
-                    // JIKA SISWA KLIK "NO/TOLAK" PINNING -> LANGSUNG HUKUM!
                     binding.exitOverlay.visibility = View.VISIBLE
                     binding.etPassword.requestFocus()
                     triggerMaxAlarm()
                 }
             } else {
-                isFirstLaunch = false // Kalau dia klik OK, ya aman
+                isFirstLaunch = false
             }
         } else {
             isFirstLaunch = false
         }
     }
 
-    // Fungsi Alarm Brutal Langsung Bunyi (Bypass Peringatan 3x)
     private fun triggerMaxAlarm() {
         if (mediaPlayer == null) {
             try {
@@ -118,7 +140,6 @@ class ExamActivity : AppCompatActivity() {
         lastToast?.show()
     }
 
-    // Fungsi Alarm Biasa buat yang iseng nge-swipe layar
     private fun triggerAlarm() {
         cheatCount++
         lastToast?.cancel()
