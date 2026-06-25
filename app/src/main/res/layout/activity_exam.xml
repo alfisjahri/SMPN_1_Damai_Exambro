@@ -10,8 +10,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#121212"
-        android:paddingTop="20dp"
-        android:paddingBottom="12dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
         android:paddingHorizontal="16dp">
 
         <TextClock
@@ -27,29 +27,31 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-            android:id="@+id/tvBattery"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="100%"
-            android:textColor="#FFFFFF"
-            android:textSize="13sp"
+            android:gravity="center_vertical"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent">
 
-        <ImageView
-            android:id="@+id/iconSignal"
-            android:layout_width="16dp"
-            android:layout_height="16dp"
-            android:layout_marginEnd="8dp"
-            android:scaleType="centerInside"
-            android:src="@drawable/ic_wifi"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/tvBattery"
-            app:layout_constraintTop_toTopOf="parent"
-            app:tint="#FFFFFF" />
+            <ImageView
+                android:id="@+id/iconSignal"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_wifi"
+                android:tint="#4CAF50" />
 
+            <TextView
+                android:id="@+id/tvBattery"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="100%"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp" />
+        </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <WebView
@@ -73,7 +75,6 @@
         app:cardBackgroundColor="#D32F2F"
         app:cardCornerRadius="20dp"
         app:cardElevation="8dp">
-
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -81,7 +82,6 @@
             android:orientation="horizontal"
             android:paddingHorizontal="24dp"
             android:paddingVertical="14dp">
-
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -123,12 +123,12 @@
                 android:background="#F5F5F5"
                 android:hint="Sandi..."
                 android:inputType="textPassword"
-                android:padding="15dp"
+                android:padding="12dp"
                 android:textColor="#000000" />
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="25dp"
+                android:layout_marginTop="20dp"
                 android:gravity="end">
                 <Button android:id="@+id/btnBatalKeluar" style="?android:attr/borderlessButtonStyle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="BATAL" android:textColor="#757575"/>
                 <Button android:id="@+id/btnKonfirmasiKeluar" android:layout_width="wrap_content" android:layout_height="wrap_content" android:backgroundTint="#D32F2F" android:text="KELUAR" />

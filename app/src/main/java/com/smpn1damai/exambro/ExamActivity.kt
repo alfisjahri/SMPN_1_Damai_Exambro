@@ -2,6 +2,7 @@ package com.smpn1damai.exambro
 
 import android.app.ActivityManager
 import android.content.*
+import android.graphics.Color
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.media.RingtoneManager
@@ -9,6 +10,8 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.BatteryManager
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import android.view.WindowManager
 import android.webkit.*
@@ -16,6 +19,8 @@ import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import com.smpn1damai.exambro.databinding.ActivityExamBinding
+import java.net.InetSocketAddress
+import java.net.Socket
 
 class ExamActivity : AppCompatActivity() {
     private lateinit var binding: ActivityExamBinding
@@ -26,10 +31,19 @@ class ExamActivity : AppCompatActivity() {
     private var lastToast: Toast? = null
     private var isFirstLaunch = true
 
+    // Handler untuk loop cek internet tiap 5 detik
+    private val networkHandler = Handler(Looper.getMainLooper())
+    private val pingRunnable = object : Runnable {
+        override fun run() {
+            checkActiveInternetAndPing()
+            networkHandler.postDelayed(this, 5000)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // --- JURUS LAYAR PENUH (IMMERSIVE MODE) ---
+        // Immersive Mode
         @Suppress("DEPRECATION")
         window.decorView.systemUiVisibility = (
                 View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
@@ -39,7 +53,6 @@ class ExamActivity : AppCompatActivity() {
                         or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                         or View.SYSTEM_UI_FLAG_FULLSCREEN
                 )
-        // Anti Screenshot & Rekam Layar
         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
 
         binding = ActivityExamBinding.inflate(layoutInflater)
@@ -52,7 +65,9 @@ class ExamActivity : AppCompatActivity() {
         startLockTask()
         setupBatteryAndNetwork()
 
-        // Tombol Keluar Floating dengan Efek Animasi
+        // Mulai cek ping secara berkala
+        networkHandler.post(pingRunnable)
+
         binding.btnKeluarFloat.setOnClickListener { view ->
             view.animate().scaleX(0.85f).scaleY(0.85f).setDuration(100).withEndAction {
                 view.animate().scaleX(1f).scaleY(1f).setDuration(100).start()
@@ -94,8 +109,6 @@ class ExamActivity : AppCompatActivity() {
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-
-        // Pastikan layar penuh tetap aktif saat aplikasi kembali fokus
         if (hasFocus) {
             @Suppress("DEPRECATION")
             window.decorView.systemUiVisibility = (
@@ -109,18 +122,75 @@ class ExamActivity : AppCompatActivity() {
 
             val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
             if (am.lockTaskModeState == ActivityManager.LOCK_TASK_MODE_NONE) {
-                if (isFirstLaunch) {
-                    isFirstLaunch = false
-                } else {
+                if (isFirstLaunch) { isFirstLaunch = false }
+                else {
                     binding.exitOverlay.visibility = View.VISIBLE
                     binding.etPassword.requestFocus()
                     triggerMaxAlarm()
                 }
-            } else {
-                isFirstLaunch = false
+            } else { isFirstLaunch = false }
+        } else { isFirstLaunch = false }
+    }
+
+    // --- STRATEGI BACKGROUND CHECK INTERNET & PING ---
+    private fun checkActiveInternetAndPing() {
+        Thread {
+            var pingResult = -1L
+            try {
+                val startTime = System.currentTimeMillis()
+                val socket = Socket()
+                // Konek ke DNS Google port 53 dengan timeout 2.5 detik
+                socket.connect(InetSocketAddress("8.8.8.8", 53), 2500)
+                val endTime = System.currentTimeMillis()
+                pingResult = endTime - startTime
+                socket.close()
+            } catch (e: Exception) {
+                pingResult = -1L // Gagal atau RTO
+            }
+
+            // Kembalikan hasil ke Main UI Thread untuk ganti warna ikon sinyal
+            runOnUiThread {
+                updateSignalUI(pingResult)
+            }
+        }.start()
+    }
+
+    private fun updateSignalUI(ping: Long) {
+        // Ambil jenis tipe koneksi dasarnya dulu (Wifi vs Data Seluler)
+        val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val cap = cm.getNetworkCapabilities(cm.activeNetwork)
+
+        if (cap != null && ping != -1L) {
+            if (cap.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+                binding.iconSignal.setImageResource(R.drawable.ic_wifi)
+            } else if (cap.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
+                binding.iconSignal.setImageResource(R.drawable.ic_signal_cellular)
+            }
+
+            // Ganti warna sesuai nilai latency ping
+            when {
+                ping < 100 -> {
+                    binding.iconSignal.setColorFilter(Color.parseColor("#4CAF50")) // Hijau (Lancar)
+                }
+                ping in 100..300 -> {
+                    binding.iconSignal.setColorFilter(Color.parseColor("#FFC107")) // Kuning (Unstable)
+                    lastToast?.cancel()
+                    lastToast = Toast.makeText(this, "Jaringan kurang stabil (Ping: ${ping}ms)", Toast.LENGTH_SHORT)
+                    lastToast?.show()
+                }
+                else -> {
+                    binding.iconSignal.setColorFilter(Color.parseColor("#FF5252")) // Merah (Lag Parah)
+                    lastToast?.cancel()
+                    lastToast = Toast.makeText(this, "Koneksi sangat buruk! Disarankan ganti jaringan.", Toast.LENGTH_SHORT)
+                    lastToast?.show()
+                }
             }
         } else {
-            isFirstLaunch = false
+            // JIKA OFFLINE / RTO TOTAL
+            binding.iconSignal.setColorFilter(Color.parseColor("#FF5252")) // Paksa Merah
+            lastToast?.cancel()
+            lastToast = Toast.makeText(this, "Tidak ada koneksi internet!", Toast.LENGTH_SHORT)
+            lastToast?.show()
         }
     }
 
@@ -143,13 +213,10 @@ class ExamActivity : AppCompatActivity() {
     private fun triggerAlarm() {
         cheatCount++
         lastToast?.cancel()
-
         if (cheatCount < 3) {
             lastToast = Toast.makeText(this, "Dilarang Swipe! ($cheatCount/3)", Toast.LENGTH_SHORT)
             lastToast?.show()
-        } else {
-            triggerMaxAlarm()
-        }
+        } else { triggerMaxAlarm() }
     }
 
     private fun setupWebView(url: String) {
@@ -157,7 +224,6 @@ class ExamActivity : AppCompatActivity() {
         settings.javaScriptEnabled = true
         settings.domStorageEnabled = true
         settings.userAgentString = settings.userAgentString.replace("; wv", "")
-
         binding.webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
                 val currentUrl = request?.url.toString()
@@ -178,16 +244,6 @@ class ExamActivity : AppCompatActivity() {
             }
         }
         registerReceiver(batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
-
-        val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val cap = cm.getNetworkCapabilities(cm.activeNetwork)
-        if (cap != null) {
-            if (cap.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
-                binding.iconSignal.setImageResource(R.drawable.ic_wifi)
-            } else if (cap.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
-                binding.iconSignal.setImageResource(R.drawable.ic_signal_cellular)
-            }
-        }
     }
 
     private fun exitApp() {
@@ -195,6 +251,7 @@ class ExamActivity : AppCompatActivity() {
         mediaPlayer?.stop()
         mediaPlayer?.release()
         mediaPlayer = null
+        networkHandler.removeCallbacks(pingRunnable) // Matikan loop ping saat keluar
         stopLockTask()
         finish()
     }
@@ -202,6 +259,7 @@ class ExamActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         try { unregisterReceiver(batteryReceiver) } catch (e: Exception) {}
+        networkHandler.removeCallbacks(pingRunnable)
         mediaPlayer?.release()
     }
 }
