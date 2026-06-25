@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#000000">
@@ -10,15 +10,48 @@
         android:layout_height="match_parent" />
 
     <TextView
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:layout_marginBottom="64dp"
-        android:background="#99000000"
-        android:padding="16dp"
+        android:layout_centerInParent="true"
         android:text="Arahkan kamera ke QR Code Ujian"
-        android:textAlignment="center"
         android:textColor="#FFFFFF"
         android:textSize="16sp"
-        android:textStyle="bold" />
-</FrameLayout>
+        android:textStyle="bold"
+        android:shadowColor="#000000"
+        android:shadowDx="2"
+        android:shadowDy="2"
+        android:shadowRadius="4"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:background="#B3000000"
+        android:weightSum="2"
+        android:elevation="10dp">
+
+        <Button
+            android:id="@+id/btnGaleri"
+            android:layout_width="0dp"
+            android:layout_height="55dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:text="Dari Galeri"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#3b82f6" />
+
+        <Button
+            android:id="@+id/btnManual"
+            android:layout_width="0dp"
+            android:layout_height="55dp"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="Ketik Link"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#22c55e" />
+    </LinearLayout>
+</RelativeLayout>

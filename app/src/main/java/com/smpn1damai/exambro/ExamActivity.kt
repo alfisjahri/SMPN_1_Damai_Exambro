@@ -30,8 +30,8 @@ class ExamActivity : AppCompatActivity() {
     private var cheatCount = 0
     private var lastToast: Toast? = null
     private var isFirstLaunch = true
+    private var isFabHidden = false
 
-    // Handler untuk loop cek internet tiap 5 detik
     private val networkHandler = Handler(Looper.getMainLooper())
     private val pingRunnable = object : Runnable {
         override fun run() {
@@ -43,7 +43,6 @@ class ExamActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Immersive Mode
         @Suppress("DEPRECATION")
         window.decorView.systemUiVisibility = (
                 View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
@@ -64,9 +63,18 @@ class ExamActivity : AppCompatActivity() {
 
         startLockTask()
         setupBatteryAndNetwork()
-
-        // Mulai cek ping secara berkala
         networkHandler.post(pingRunnable)
+
+        // HIDE FAB SAAT SCROLL
+        binding.webView.setOnScrollChangeListener { _, _, scrollY, _, oldScrollY ->
+            if (scrollY > oldScrollY && !isFabHidden) {
+                isFabHidden = true
+                binding.btnKeluarFloat.animate().translationY(300f).setDuration(250).start()
+            } else if (scrollY < oldScrollY && isFabHidden) {
+                isFabHidden = false
+                binding.btnKeluarFloat.animate().translationY(0f).setDuration(250).start()
+            }
+        }
 
         binding.btnKeluarFloat.setOnClickListener { view ->
             view.animate().scaleX(0.85f).scaleY(0.85f).setDuration(100).withEndAction {
@@ -119,7 +127,6 @@ class ExamActivity : AppCompatActivity() {
                             or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                             or View.SYSTEM_UI_FLAG_FULLSCREEN
                     )
-
             val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
             if (am.lockTaskModeState == ActivityManager.LOCK_TASK_MODE_NONE) {
                 if (isFirstLaunch) { isFirstLaunch = false }
@@ -132,65 +139,46 @@ class ExamActivity : AppCompatActivity() {
         } else { isFirstLaunch = false }
     }
 
-    // --- STRATEGI BACKGROUND CHECK INTERNET & PING ---
     private fun checkActiveInternetAndPing() {
         Thread {
             var pingResult = -1L
             try {
                 val startTime = System.currentTimeMillis()
                 val socket = Socket()
-                // Konek ke DNS Google port 53 dengan timeout 2.5 detik
                 socket.connect(InetSocketAddress("8.8.8.8", 53), 2500)
-                val endTime = System.currentTimeMillis()
-                pingResult = endTime - startTime
+                pingResult = System.currentTimeMillis() - startTime
                 socket.close()
-            } catch (e: Exception) {
-                pingResult = -1L // Gagal atau RTO
-            }
-
-            // Kembalikan hasil ke Main UI Thread untuk ganti warna ikon sinyal
-            runOnUiThread {
-                updateSignalUI(pingResult)
-            }
+            } catch (e: Exception) { pingResult = -1L }
+            runOnUiThread { updateSignalUI(pingResult) }
         }.start()
     }
 
     private fun updateSignalUI(ping: Long) {
-        // Ambil jenis tipe koneksi dasarnya dulu (Wifi vs Data Seluler)
         val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val cap = cm.getNetworkCapabilities(cm.activeNetwork)
-
         if (cap != null && ping != -1L) {
             if (cap.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
                 binding.iconSignal.setImageResource(R.drawable.ic_wifi)
             } else if (cap.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
                 binding.iconSignal.setImageResource(R.drawable.ic_signal_cellular)
             }
-
-            // Ganti warna sesuai nilai latency ping
             when {
-                ping < 100 -> {
-                    binding.iconSignal.setColorFilter(Color.parseColor("#4CAF50")) // Hijau (Lancar)
-                }
+                ping < 100 -> binding.iconSignal.setColorFilter(Color.parseColor("#4CAF50"))
                 ping in 100..300 -> {
-                    binding.iconSignal.setColorFilter(Color.parseColor("#FFC107")) // Kuning (Unstable)
+                    binding.iconSignal.setColorFilter(Color.parseColor("#FFC107"))
                     lastToast?.cancel()
-                    lastToast = Toast.makeText(this, "Jaringan kurang stabil (Ping: ${ping}ms)", Toast.LENGTH_SHORT)
-                    lastToast?.show()
+                    lastToast = Toast.makeText(this, "Jaringan kurang stabil (Ping: ${ping}ms)", Toast.LENGTH_SHORT).apply { show() }
                 }
                 else -> {
-                    binding.iconSignal.setColorFilter(Color.parseColor("#FF5252")) // Merah (Lag Parah)
+                    binding.iconSignal.setColorFilter(Color.parseColor("#FF5252"))
                     lastToast?.cancel()
-                    lastToast = Toast.makeText(this, "Koneksi sangat buruk! Disarankan ganti jaringan.", Toast.LENGTH_SHORT)
-                    lastToast?.show()
+                    lastToast = Toast.makeText(this, "Koneksi buruk! Disarankan ganti jaringan.", Toast.LENGTH_SHORT).apply { show() }
                 }
             }
         } else {
-            // JIKA OFFLINE / RTO TOTAL
-            binding.iconSignal.setColorFilter(Color.parseColor("#FF5252")) // Paksa Merah
+            binding.iconSignal.setColorFilter(Color.parseColor("#FF5252"))
             lastToast?.cancel()
-            lastToast = Toast.makeText(this, "Tidak ada koneksi internet!", Toast.LENGTH_SHORT)
-            lastToast?.show()
+            lastToast = Toast.makeText(this, "Tidak ada koneksi internet!", Toast.LENGTH_SHORT).apply { show() }
         }
     }
 
@@ -199,23 +187,20 @@ class ExamActivity : AppCompatActivity() {
             try {
                 val am = getSystemService(Context.AUDIO_SERVICE) as AudioManager
                 am.setStreamVolume(AudioManager.STREAM_ALARM, am.getStreamMaxVolume(AudioManager.STREAM_ALARM), 0)
-                val uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-                mediaPlayer = MediaPlayer.create(this, uri)
+                mediaPlayer = MediaPlayer.create(this, RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM))
                 mediaPlayer?.isLooping = true
                 mediaPlayer?.start()
             } catch (e: Exception) {}
         }
         lastToast?.cancel()
-        lastToast = Toast.makeText(this, "PELANGGARAN: PINNING DITOLAK!", Toast.LENGTH_LONG)
-        lastToast?.show()
+        lastToast = Toast.makeText(this, "PELANGGARAN: PINNING DITOLAK!", Toast.LENGTH_LONG).apply { show() }
     }
 
     private fun triggerAlarm() {
         cheatCount++
         lastToast?.cancel()
         if (cheatCount < 3) {
-            lastToast = Toast.makeText(this, "Dilarang Swipe! ($cheatCount/3)", Toast.LENGTH_SHORT)
-            lastToast?.show()
+            lastToast = Toast.makeText(this, "Dilarang Swipe! ($cheatCount/3)", Toast.LENGTH_SHORT).apply { show() }
         } else { triggerMaxAlarm() }
     }
 
@@ -226,8 +211,8 @@ class ExamActivity : AppCompatActivity() {
         settings.userAgentString = settings.userAgentString.replace("; wv", "")
         binding.webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
-                val currentUrl = request?.url.toString()
-                return !currentUrl.contains("google.com") && !currentUrl.contains("gstatic.com")
+                // BEBASKAN SEMUA LINK BIAR BISA DIAKSES (CBT, QUIZIZZ, DLL)
+                return false
             }
         }
         binding.webView.loadUrl(url)
@@ -238,9 +223,7 @@ class ExamActivity : AppCompatActivity() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 val level = intent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
                 val scale = intent?.getIntExtra(BatteryManager.EXTRA_SCALE, -1) ?: -1
-                if (level != -1 && scale != -1) {
-                    binding.tvBattery.text = "${(level * 100 / scale)}%"
-                }
+                if (level != -1 && scale != -1) { binding.tvBattery.text = "${(level * 100 / scale)}%" }
             }
         }
         registerReceiver(batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
@@ -251,7 +234,7 @@ class ExamActivity : AppCompatActivity() {
         mediaPlayer?.stop()
         mediaPlayer?.release()
         mediaPlayer = null
-        networkHandler.removeCallbacks(pingRunnable) // Matikan loop ping saat keluar
+        networkHandler.removeCallbacks(pingRunnable)
         stopLockTask()
         finish()
     }
