@@ -22,10 +22,12 @@
         android:shadowDy="2"
         android:shadowRadius="4"/>
 
+    <!-- KOTAK TOMBOL YANG SUDAH DIBERI BANTALAN (MARGIN BOTTOM) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
+        android:layout_marginBottom="45dp"
         android:orientation="horizontal"
         android:padding="16dp"
         android:background="#B3000000"
