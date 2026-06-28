@@ -25,7 +25,6 @@ import java.net.Socket
 class ExamActivity : AppCompatActivity() {
     private lateinit var binding: ActivityExamBinding
     private var exitPassword = ""
-    // mediaPlayer dihapus karena sudah tidak pakai alarm suara
     private lateinit var batteryReceiver: BroadcastReceiver
     private var cheatCount = 0
     private var lastToast: Toast? = null
@@ -97,7 +96,7 @@ class ExamActivity : AppCompatActivity() {
             if (binding.etPassword.text.toString() == exitPassword) { exitApp() }
             else {
                 binding.etPassword.error = "Sandi Salah!"
-                triggerAlarm() // Sekarang fungsi ini memanggil pop-up, bukan sirine
+                triggerAlarm()
             }
         }
 
@@ -183,10 +182,7 @@ class ExamActivity : AppCompatActivity() {
     }
 
     private fun triggerMaxAlarm() {
-        // Hapus kode alarm suara (mediaPlayer) yang lama
-        // Ganti dengan pemanggilan fungsi pop-up password
         showPasswordDialog()
-
         lastToast?.cancel()
         lastToast = Toast.makeText(this, "PELANGGARAN: PINNING DITOLAK!", Toast.LENGTH_LONG).apply { show() }
     }
@@ -197,7 +193,6 @@ class ExamActivity : AppCompatActivity() {
         if (cheatCount < 3) {
             lastToast = Toast.makeText(this, "Dilarang Swipe! ($cheatCount/3)", Toast.LENGTH_SHORT).apply { show() }
         } else {
-            // Jika sudah 3 kali pelanggaran, panggil pop-up
             triggerMaxAlarm()
         }
     }
@@ -206,10 +201,11 @@ class ExamActivity : AppCompatActivity() {
         val settings = binding.webView.settings
         settings.javaScriptEnabled = true
         settings.domStorageEnabled = true
+        // Ini penting banget biar Google ngenalin webview kita dan ngizinin login
         settings.userAgentString = settings.userAgentString.replace("; wv", "")
+
         binding.webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
-                // BEBASKAN SEMUA LINK BIAR BISA DIAKSES (CBT, QUIZIZZ, DLL)
                 return false
             }
         }
@@ -228,7 +224,7 @@ class ExamActivity : AppCompatActivity() {
     }
 
     private fun exitApp() {
-        CookieManager.getInstance().removeAllCookies(null)
+        // HAPUS KODE COOKIE DI SINI. Dibiarkan kosong biar riwayat login nempel.
         networkHandler.removeCallbacks(pingRunnable)
         stopLockTask()
         finish()
@@ -240,9 +236,6 @@ class ExamActivity : AppCompatActivity() {
         networkHandler.removeCallbacks(pingRunnable)
     }
 
-    // ==========================================
-    // FUNGSI BARU: POP-UP PASSWORD PENGGANTI ALARM
-    // ==========================================
     private fun showPasswordDialog() {
         val builder = AlertDialog.Builder(this)
         builder.setTitle("⚠️ Peringatan Sistem")
@@ -260,7 +253,6 @@ class ExamActivity : AppCompatActivity() {
                 exitApp()
             } else {
                 Toast.makeText(this, "Sandi salah! Silakan kembali mengerjakan ujian.", Toast.LENGTH_LONG).show()
-                // Reset hitungan cheat biar ngasih kesempatan lagi
                 cheatCount = 0
             }
         }

@@ -15,8 +15,8 @@ android {
         applicationId = "com.smpn1damai.exambro"
         minSdk = 24
         targetSdk = 37
-        versionCode = 3
-        versionName = "1.2.1"
+        versionCode = 4
+        versionName = "1.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         resConfigs("id", "en")
