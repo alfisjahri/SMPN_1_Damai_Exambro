@@ -4,8 +4,6 @@ import android.app.ActivityManager
 import android.content.*
 import android.graphics.Color
 import android.media.AudioManager
-import android.media.MediaPlayer
-import android.media.RingtoneManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.BatteryManager
@@ -15,8 +13,10 @@ import android.os.Looper
 import android.view.View
 import android.view.WindowManager
 import android.webkit.*
+import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.smpn1damai.exambro.databinding.ActivityExamBinding
 import java.net.InetSocketAddress
@@ -25,7 +25,7 @@ import java.net.Socket
 class ExamActivity : AppCompatActivity() {
     private lateinit var binding: ActivityExamBinding
     private var exitPassword = ""
-    private var mediaPlayer: MediaPlayer? = null
+    // mediaPlayer dihapus karena sudah tidak pakai alarm suara
     private lateinit var batteryReceiver: BroadcastReceiver
     private var cheatCount = 0
     private var lastToast: Toast? = null
@@ -97,7 +97,7 @@ class ExamActivity : AppCompatActivity() {
             if (binding.etPassword.text.toString() == exitPassword) { exitApp() }
             else {
                 binding.etPassword.error = "Sandi Salah!"
-                triggerAlarm()
+                triggerAlarm() // Sekarang fungsi ini memanggil pop-up, bukan sirine
             }
         }
 
@@ -183,15 +183,10 @@ class ExamActivity : AppCompatActivity() {
     }
 
     private fun triggerMaxAlarm() {
-        if (mediaPlayer == null) {
-            try {
-                val am = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-                am.setStreamVolume(AudioManager.STREAM_ALARM, am.getStreamMaxVolume(AudioManager.STREAM_ALARM), 0)
-                mediaPlayer = MediaPlayer.create(this, RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM))
-                mediaPlayer?.isLooping = true
-                mediaPlayer?.start()
-            } catch (e: Exception) {}
-        }
+        // Hapus kode alarm suara (mediaPlayer) yang lama
+        // Ganti dengan pemanggilan fungsi pop-up password
+        showPasswordDialog()
+
         lastToast?.cancel()
         lastToast = Toast.makeText(this, "PELANGGARAN: PINNING DITOLAK!", Toast.LENGTH_LONG).apply { show() }
     }
@@ -201,7 +196,10 @@ class ExamActivity : AppCompatActivity() {
         lastToast?.cancel()
         if (cheatCount < 3) {
             lastToast = Toast.makeText(this, "Dilarang Swipe! ($cheatCount/3)", Toast.LENGTH_SHORT).apply { show() }
-        } else { triggerMaxAlarm() }
+        } else {
+            // Jika sudah 3 kali pelanggaran, panggil pop-up
+            triggerMaxAlarm()
+        }
     }
 
     private fun setupWebView(url: String) {
@@ -231,9 +229,6 @@ class ExamActivity : AppCompatActivity() {
 
     private fun exitApp() {
         CookieManager.getInstance().removeAllCookies(null)
-        mediaPlayer?.stop()
-        mediaPlayer?.release()
-        mediaPlayer = null
         networkHandler.removeCallbacks(pingRunnable)
         stopLockTask()
         finish()
@@ -243,6 +238,39 @@ class ExamActivity : AppCompatActivity() {
         super.onDestroy()
         try { unregisterReceiver(batteryReceiver) } catch (e: Exception) {}
         networkHandler.removeCallbacks(pingRunnable)
-        mediaPlayer?.release()
+    }
+
+    // ==========================================
+    // FUNGSI BARU: POP-UP PASSWORD PENGGANTI ALARM
+    // ==========================================
+    private fun showPasswordDialog() {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("⚠️ Peringatan Sistem")
+        builder.setMessage("Sistem mendeteksi percobaan keluar. Masukkan sandi pengawas untuk mengizinkan keluar:")
+
+        val input = EditText(this)
+        input.inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+        input.setPadding(40, 40, 40, 40)
+        builder.setView(input)
+
+        builder.setPositiveButton("OK") { _, _ ->
+            val typedPassword = input.text.toString()
+
+            if (typedPassword == exitPassword) {
+                exitApp()
+            } else {
+                Toast.makeText(this, "Sandi salah! Silakan kembali mengerjakan ujian.", Toast.LENGTH_LONG).show()
+                // Reset hitungan cheat biar ngasih kesempatan lagi
+                cheatCount = 0
+            }
+        }
+
+        builder.setNegativeButton("Batal") { dialog, _ ->
+            dialog.cancel()
+        }
+
+        val dialog = builder.create()
+        dialog.setCancelable(false)
+        dialog.show()
     }
 }
