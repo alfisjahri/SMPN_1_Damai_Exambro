@@ -17,6 +17,10 @@ android {
         targetSdk = 37
         versionCode = 4
         versionName = "1.3"
+        ndk {
+            abiFilters.add("armeabi-v7a")
+            abiFilters.add("arm64-v8a")
+        }
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         resConfigs("id", "en")
@@ -24,8 +28,8 @@ android {
 
     buildTypes {
         release {
-                isMinifyEnabled = false
-                isShrinkResources = false
+                isMinifyEnabled = true
+                isShrinkResources = true
 
             proguardFiles(
                     getDefaultProguardFile("proguard-android-optimize.txt"),
