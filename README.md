@@ -1,69 +1,50 @@
-# 🛡️ SMPN 1 Damai Exambro
+# SMPN 1 Damai Exambro
 
 ![Android](https://img.shields.io/badge/Platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white)
 ![Kotlin](https://img.shields.io/badge/Language-Kotlin-7F52FF?style=flat-square&logo=kotlin&logoColor=white)
-![Version](https://img.shields.io/badge/Version-1.0.0-blue?style=flat-square)
+![Version](https://img.shields.io/badge/Version-1.3-blue?style=flat-square)
 ![Status](https://img.shields.io/badge/Status-Stable-success?style=flat-square)
 
-**SMPN 1 Damai Exambro** adalah aplikasi *Exam Browser* berbasis Android yang dirancang khusus untuk memastikan integritas, keamanan, dan kenyamanan siswa saat melaksanakan ujian digital (menggunakan Google Forms atau platform web ujian lainnya). 
+**SMPN 1 Damai Exambro** ini aplikasi *Exam Browser* Android yang saya buat khusus untuk menjaga keamanan dan kenyamanan ujian digital anak-anak di sekolah (pakai Google Forms atau platform ujian lain). Dibangun murni pakai **Kotlin Native**, jadi aplikasinya ringan banget, responsif, dan aman dari kecurangan.
 
-Dibangun menggunakan **Kotlin Native**, aplikasi ini sangat ringan, responsif (Zero Delay), dan sangat aman dari kecurangan.
+## 🔥 Fitur Unggulan (Update v1.3)
 
----
+*   **Scan dari Galeri & Input Manual (BARU):** Kalau kamera HP anak-anak lagi bermasalah, sekarang bisa masukin soal ujian lewat tombol *Ketik Link* manual atau ambil gambar QR Code langsung dari *Galeri*.
+*   **Tombol Keluar Dinamis / Auto-Hide (BARU):** Tombol keluar (gembok) bakal otomatis sembunyi waktu siswa lagi *scroll* baca soal, jadi gak menutupi layar dan lebih nyaman.
+*   **Toleransi Anti-Cheat (BARU):** Sistem gak langsung ngunci/alarm di awal. Ada toleransi peringatan (maksimal 3 kali) kalau anak-anak nyoba *swipe* navigasi (tombol *Back*) sebelum akhirnya memicu pelanggaran maksimal.
+*   **Simpan Sesi Login / Cookie Nempel (BARU):** Fitur hapus riwayat otomatis sekarang ditiadakan. Cookie Google sengaja dibiarkan nempel biar anak-anak gak usah repot *login* berulang kali kalau aplikasinya gak sengaja ketutup.
+*   **Zero-Delay Loading:** Soal ujian langsung dimuat di *background*, jadi gak ada lagi layar putih nunggu *loading*.
+*   **Kiosk Mode (Pinned App):** Mengunci aplikasi di layar depan. Siswa gak bisa buka aplikasi lain atau ngecek notifikasi.
+*   **Anti-Screenshot & Screen Record:** Pakai sistem keamanan tingkat kernel (`FLAG_SECURE`), mustahil buat direkam atau di-screenshot.
+*   **Smart Custom Status Bar:** Status bar bawaan HP ditimpa pakai indikator mandiri untuk nampilin Jam, Persentase Baterai, dan Sinyal Dinamis (sistem nge-ping otomatis ke `8.8.8.8` tiap 5 detik untuk ngecek kestabilan jaringan).
 
-## ✨ Fitur Unggulan
+## 📖 Panduan Buat Guru / Panitia
 
-* 🚀 **Zero-Delay Loading:** Soal ujian dimuat secara *asynchronous* di latar belakang bersamaan dengan otorisasi sistem, menghilangkan waktu tunggu layar kosong/putih.
-* 🔒 **Kiosk Mode (Pinned App):** Memaksa perangkat mengunci aplikasi di layar depan. Siswa tidak dapat membuka aplikasi lain, melihat notifikasi, atau kembali ke *Home*.
-* 📸 **Anti-Screenshot & Screen Record:** Menggunakan pengamanan tingkat kernel (`FLAG_SECURE`) yang memblokir semua upaya perekaman layar atau tangkapan layar.
-* 🚨 **Sistem Anti-Cheat & Alarm:** Alarm sirine akan otomatis berbunyi maksimal jika siswa mencoba menolak mode kunci (*Screen Pinning*) atau mencoba melakukan *swipe* navigasi (tombol *Back*).
-* 📊 **Smart Custom Status Bar:** Menggantikan status bar bawaan HP dengan indikator mandiri yang menampilkan **Jam, Sinyal Dinamis (WiFi/Seluler), dan Persentase Baterai** secara *real-time*.
-* 🧹 **Auto-Clear Session:** Sangat cocok untuk **tablet sekolah yang digunakan bergantian**. Aplikasi secara otomatis menghapus *cookies*, riwayat, dan sesi login Google saat aplikasi ditutup.
+Biar siswa bisa masuk ke soal, cukup sediakan **QR Code**. Aplikasi ini udah dilengkapi sistem **Password Keluar** yang ditempel langsung ke dalam link QR Code-nya.
 
----
-
-## 🛠️ Panduan Penggunaan Bagi Guru / Panitia
-
-Untuk masuk ke soal, siswa cukup memindai **QR Code** yang telah disiapkan oleh panitia. Aplikasi ini dilengkapi dengan sistem keamanan **Password Keluar** yang disematkan langsung ke dalam QR Code.
-
-### Cara Membuat Link QR Code:
-Tambahkan parameter `?pwd=SANDI_PILIHAN` di ujung link soal ujian Anda.
+### Cara Bikin Link QR Code:
+Tambahkan parameter `?pwd=SANDIPILIHAN` di paling ujung link ujian.
 
 **Contoh:**
-Jika link soal Google Form Anda adalah:
-`https://docs.google.com/forms/d/e/1FAIpQLS/viewform`
-
-Dan Anda ingin sandi keluarnya adalah **`lulus2026`**, maka ubah link tersebut menjadi:
+Link asli Google Form: `https://docs.google.com/forms/d/e/1FAIpQLS/viewform`
+Mau pakai sandi keluar **`lulus2026`**, maka ubah linknya jadi:
 `https://docs.google.com/forms/d/e/1FAIpQLS/viewform?pwd=lulus2026`
 
-> **PENTING:** > Jadikan link yang sudah ditambah password tersebut menjadi QR Code. Jika Anda tidak menambahkan parameter `?pwd=` di URL, maka aplikasi akan menggunakan sandi *default* yaitu: **`guru123`**.
+> **PENTING:**
+> Link yang sudah ditambahin parameter password tersebut baru diubah jadi QR Code. Kalau lupa nambahin parameter `?pwd=`, aplikasi bakal pakai sandi *default* dari sistem yaitu: **`guru123`**.
 
----
-
-## 📥 Cara Instalasi
+## 🚀 Cara Instalasi
 
 1. Buka halaman [Releases](../../releases) di repository ini.
-2. Unduh file APK terbaru (contoh: `SMPN1Damai-Exambro-v1.0.0.apk`).
-3. Pindahkan ke HP Android siswa atau Tablet Sekolah.
-4. Buka file APK tersebut dan klik **Install** (pastikan izin *Install from Unknown Sources* sudah diaktifkan di HP).
-5. Berikan izin Akses Kamera saat pertama kali dibuka.
-6. Aplikasi siap digunakan untuk memindai QR Code ujian!
+2. Download file APK versi terbaru (`SMPN1Damai-Exambro-v1.3.apk`).
+3. Install di HP Android siswa atau Tablet Sekolah (pastikan *Install from Unknown Sources* sudah diaktifkan).
+4. Kasih izin Akses Kamera waktu pertama kali dibuka.
+5. Aplikasi siap dipakai buat scan QR Code ujian!
 
----
+## 🛠 Tech Stack & Library
 
-## 💻 Tech Stack & Library
-
-Aplikasi ini dikembangkan di **Android Studio** dengan spesifikasi:
-* **Language:** Kotlin
-* **Minimum SDK:** API 24 (Android 7.0 Nougat)
-* **Scanner Engine:** [Google ML Kit Barcode Scanning](https://developers.google.com/ml-kit/vision/barcode-scanning) & CameraX
-* **Architecture:** Native Android (Empty Views Activity)
-
----
-
-## 👨‍💻 Kontribusi
-Proyek ini dibuat untuk mendukung digitalisasi pendidikan di SMPN 1 Damai. Jika Anda menemukan *bug* atau memiliki saran fitur tambahan, silakan buat *Issue* atau kirimkan *Pull Request*.
-
-<p align="center">
-  <i>"Membangun Integritas Pendidikan Melalui Teknologi"</i>
-</p>
+*   **Language:** Kotlin
+*   **Minimum SDK:** API 24 (Android 7.0 Nougat)
+*   **Target SDK:** API 37
+*   **Scanner Engine:** Google ML Kit Barcode Scanning & CameraX
+*   **Architecture:** Native Android (Empty Views Activity)
