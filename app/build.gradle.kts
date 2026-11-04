@@ -1,5 +1,17 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
+}
+
+// Signing release: aktif hanya jika keystore.properties ada.
+// File itu LOKAL di mesin build dan TIDAK di-commit ke Git (lihat .gitignore).
+// Tanpa file itu build debug tetap jalan, tapi build release tidak tertanda.
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+if (keystorePropertiesFile.exists()) {
+    FileInputStream(keystorePropertiesFile).use { keystoreProperties.load(it) }
 }
 
 android {
@@ -15,8 +27,8 @@ android {
         applicationId = "com.smpn1damai.exambro"
         minSdk = 24
         targetSdk = 37
-        versionCode = 4
-        versionName = "1.3"
+        versionCode = 5
+        versionName = "0.1.0"
         ndk {
             abiFilters.add("armeabi-v7a")
             abiFilters.add("arm64-v8a")
@@ -26,10 +38,24 @@ android {
         resConfigs("id", "en")
     }
 
+    signingConfigs {
+        if (keystorePropertiesFile.exists()) {
+            create("release") {
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+                storeFile = file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
                 isMinifyEnabled = true
                 isShrinkResources = true
+                if (keystorePropertiesFile.exists()) {
+                    signingConfig = signingConfigs.getByName("release")
+                }
 
             proguardFiles(
                     getDefaultProguardFile("proguard-android-optimize.txt"),

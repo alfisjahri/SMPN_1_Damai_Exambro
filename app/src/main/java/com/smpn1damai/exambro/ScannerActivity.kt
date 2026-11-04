@@ -102,8 +102,7 @@ class ScannerActivity : AppCompatActivity() {
                 .addOnSuccessListener { barcodes ->
                     if (barcodes.isNotEmpty()) {
                         val url = barcodes[0].rawValue ?: ""
-                        goToExam(url)
-                        cameraExecutor.shutdown()
+                        if (goToExam(url)) cameraExecutor.shutdown()
                     }
                 }
                 .addOnCompleteListener { imageProxy.close() }
@@ -128,16 +127,45 @@ class ScannerActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun goToExam(scannedUrl: String) {
+    private fun goToExam(rawUrl: String): Boolean {
+        val scannedUrl = normalizeUrl(rawUrl)
+        val pwd = extractPwd(scannedUrl)
+        if (pwd.isNullOrBlank()) {
+            // Gagal di sini saja: tetap di scanner supaya bisa coba lagi,
+            // jangan pindah ke ExamActivity yang langsung finish (mental ke home).
+            Toast.makeText(this, "Link tidak berisi sandi pengawas (?pwd=). Cek lagi linknya!", Toast.LENGTH_LONG).show()
+            return false
+        }
         val intent = Intent(this, ExamActivity::class.java)
         intent.putExtra("TARGET_URL", scannedUrl)
-        try {
-            val uri = android.net.Uri.parse(scannedUrl)
-            val pwd = uri.getQueryParameter("pwd")
-            if (pwd != null) { intent.putExtra("EXIT_PWD", pwd) }
-        } catch (e: Exception) {}
+        intent.putExtra("EXIT_PWD", pwd)
         startActivity(intent)
         finish()
+        return true
+    }
+
+    // Normalisasi: "https:example.com/..." (tanpa //, gampang kejadian saat ketik
+    // cepat di HP) -> "https://example.com/..." agar WebView + pembaca parameter jalan normal.
+    private fun normalizeUrl(raw: String): String {
+        val url = raw.trim()
+        val match = Regex("^(https?:)(?!//)(.+)$").find(url)
+        return if (match != null) "${match.groupValues[1]}//${match.groupValues[2]}" else url
+    }
+
+    // Ambil ?pwd= dengan dua cara: Uri standar, lalu cari mentah di string.
+    // Uri Android mengembalikan null untuk URL tanpa // (bukan hierarchical),
+    // jadi link "https:domain.com/?pwd=12345" sempat lolos padahal sandinya ada.
+    private fun extractPwd(url: String): String? {
+        try {
+            val p = android.net.Uri.parse(url).getQueryParameter("pwd")
+            if (!p.isNullOrBlank()) return p
+        } catch (e: Exception) {}
+        val idx = url.indexOf("pwd=")
+        if (idx >= 0) {
+            val rest = url.substring(idx + 4).substringBefore("&").substringBefore("#")
+            if (rest.isNotBlank()) return rest
+        }
+        return null
     }
 
     override fun onDestroy() {

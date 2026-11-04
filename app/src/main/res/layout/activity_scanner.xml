@@ -2,12 +2,53 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#000000">
+    android:background="#000000"
+    android:fitsSystemWindows="true">
+
+    <LinearLayout
+        android:id="@+id/headerBar"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_alignParentTop="true"
+        android:background="@color/exambro_dark"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp">
+
+        <ImageView
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/logo_sekolah" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SMPN 1 DAMAI"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="EXAMBRO"
+                android:textColor="@color/exambro_orange"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
 
     <androidx.camera.view.PreviewView
         android:id="@+id/viewFinder"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:layout_below="@id/headerBar" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -20,9 +61,8 @@
         android:shadowColor="#000000"
         android:shadowDx="2"
         android:shadowDy="2"
-        android:shadowRadius="4"/>
+        android:shadowRadius="4" />
 
-    <!-- KOTAK TOMBOL YANG SUDAH DIBERI BANTALAN (MARGIN BOTTOM) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -43,7 +83,7 @@
             android:text="Dari Galeri"
             android:textStyle="bold"
             android:textColor="#FFFFFF"
-            android:backgroundTint="#3b82f6" />
+            android:backgroundTint="@color/exambro_dark" />
 
         <Button
             android:id="@+id/btnManual"
@@ -54,6 +94,6 @@
             android:text="Ketik Link"
             android:textStyle="bold"
             android:textColor="#FFFFFF"
-            android:backgroundTint="#22c55e" />
+            android:backgroundTint="@color/exambro_orange" />
     </LinearLayout>
 </RelativeLayout>

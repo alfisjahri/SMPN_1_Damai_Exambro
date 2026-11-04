@@ -2,6 +2,7 @@ package com.smpn1damai.exambro
 
 import android.app.ActivityManager
 import android.content.*
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.media.AudioManager
 import android.net.ConnectivityManager
@@ -13,10 +14,8 @@ import android.os.Looper
 import android.view.View
 import android.view.WindowManager
 import android.webkit.*
-import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.smpn1damai.exambro.databinding.ActivityExamBinding
 import java.net.InetSocketAddress
@@ -30,6 +29,8 @@ class ExamActivity : AppCompatActivity() {
     private var lastToast: Toast? = null
     private var isFirstLaunch = true
     private var isFabHidden = false
+    private var isExiting = false
+    private var lastUiRevealWarningMs = 0L
 
     private val networkHandler = Handler(Looper.getMainLooper())
     private val pingRunnable = object : Runnable {
@@ -56,13 +57,35 @@ class ExamActivity : AppCompatActivity() {
         binding = ActivityExamBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        exitPassword = intent.getStringExtra("EXIT_PWD") ?: "guru123"
+        // Tanpa sandi dari QR, ujian tidak dimulai (fail-closed):
+        // sandi default publik tidak lagi dipakai.
+        exitPassword = intent.getStringExtra("EXIT_PWD") ?: ""
+        if (exitPassword.isBlank()) {
+            Toast.makeText(this, "QR tidak berisi sandi pengawas. Lapor ke pengawas!", Toast.LENGTH_LONG).show()
+            finish()
+            return
+        }
 
         setupWebView(intent.getStringExtra("TARGET_URL") ?: "https://google.com")
 
         startLockTask()
         setupBatteryAndNetwork()
         networkHandler.post(pingRunnable)
+
+        // Peringatan saat user swipe dari tepi layar (memunculkan navigation bar):
+        // di mode immersive, swipe itu sendiri tidak memicu callback lain,
+        // jadi dengarkan perubahan visibilitas system UI.
+        @Suppress("DEPRECATION")
+        window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
+            val navVisible = (visibility and View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) == 0
+            if (navVisible && !isExiting) {
+                val now = System.currentTimeMillis()
+                if (now - lastUiRevealWarningMs > 3000) {
+                    lastUiRevealWarningMs = now
+                    triggerAlarm()
+                }
+            }
+        }
 
         // HIDE FAB SAAT SCROLL
         binding.webView.setOnScrollChangeListener { _, _, scrollY, _, oldScrollY ->
@@ -138,6 +161,12 @@ class ExamActivity : AppCompatActivity() {
         } else { isFirstLaunch = false }
     }
 
+    // Tombol navigasi (Home/Recents) juga memicu peringatan, bukan cuma swipe/back.
+    override fun onUserLeaveHint() {
+        super.onUserLeaveHint()
+        if (!isExiting) triggerAlarm()
+    }
+
     private fun checkActiveInternetAndPing() {
         Thread {
             var pingResult = -1L
@@ -156,33 +185,33 @@ class ExamActivity : AppCompatActivity() {
         val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val cap = cm.getNetworkCapabilities(cm.activeNetwork)
         if (cap != null && ping != -1L) {
-            if (cap.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
-                binding.iconSignal.setImageResource(R.drawable.ic_wifi)
-            } else if (cap.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
-                binding.iconSignal.setImageResource(R.drawable.ic_signal_cellular)
-            }
             when {
-                ping < 100 -> binding.iconSignal.setColorFilter(Color.parseColor("#4CAF50"))
+                ping < 100 -> {
+                    binding.dotOnline.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#22C55E"))
+                }
                 ping in 100..300 -> {
-                    binding.iconSignal.setColorFilter(Color.parseColor("#FFC107"))
+                    binding.dotOnline.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#FFC107"))
                     lastToast?.cancel()
                     lastToast = Toast.makeText(this, "Jaringan kurang stabil (Ping: ${ping}ms)", Toast.LENGTH_SHORT).apply { show() }
                 }
                 else -> {
-                    binding.iconSignal.setColorFilter(Color.parseColor("#FF5252"))
+                    binding.dotOnline.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#FF5252"))
                     lastToast?.cancel()
                     lastToast = Toast.makeText(this, "Koneksi buruk! Disarankan ganti jaringan.", Toast.LENGTH_SHORT).apply { show() }
                 }
             }
         } else {
-            binding.iconSignal.setColorFilter(Color.parseColor("#FF5252"))
+            binding.dotOnline.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#FF5252"))
             lastToast?.cancel()
             lastToast = Toast.makeText(this, "Tidak ada koneksi internet!", Toast.LENGTH_SHORT).apply { show() }
         }
     }
 
     private fun triggerMaxAlarm() {
-        showPasswordDialog()
+        // Popup-nya SAMA dengan yang muncul saat klik gembok (exitOverlay),
+        // bukan dialog AlertDialog yang berbeda.
+        binding.exitOverlay.visibility = View.VISIBLE
+        binding.etPassword.requestFocus()
         lastToast?.cancel()
         lastToast = Toast.makeText(this, "PELANGGARAN: PINNING DITOLAK!", Toast.LENGTH_LONG).apply { show() }
     }
@@ -217,7 +246,10 @@ class ExamActivity : AppCompatActivity() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 val level = intent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
                 val scale = intent?.getIntExtra(BatteryManager.EXTRA_SCALE, -1) ?: -1
-                if (level != -1 && scale != -1) { binding.tvBattery.text = "${(level * 100 / scale)}%" }
+                if (level != -1 && scale != -1) {
+                    val pct = level * 100 / scale
+                    binding.tvBattery.text = "$pct%"
+                }
             }
         }
         registerReceiver(batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
@@ -225,6 +257,7 @@ class ExamActivity : AppCompatActivity() {
 
     private fun exitApp() {
         // HAPUS KODE COOKIE DI SINI. Dibiarkan kosong biar riwayat login nempel.
+        isExiting = true
         networkHandler.removeCallbacks(pingRunnable)
         stopLockTask()
         finish()
@@ -234,35 +267,5 @@ class ExamActivity : AppCompatActivity() {
         super.onDestroy()
         try { unregisterReceiver(batteryReceiver) } catch (e: Exception) {}
         networkHandler.removeCallbacks(pingRunnable)
-    }
-
-    private fun showPasswordDialog() {
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle("⚠️ Peringatan Sistem")
-        builder.setMessage("Sistem mendeteksi percobaan keluar. Masukkan sandi pengawas untuk mengizinkan keluar:")
-
-        val input = EditText(this)
-        input.inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
-        input.setPadding(40, 40, 40, 40)
-        builder.setView(input)
-
-        builder.setPositiveButton("OK") { _, _ ->
-            val typedPassword = input.text.toString()
-
-            if (typedPassword == exitPassword) {
-                exitApp()
-            } else {
-                Toast.makeText(this, "Sandi salah! Silakan kembali mengerjakan ujian.", Toast.LENGTH_LONG).show()
-                cheatCount = 0
-            }
-        }
-
-        builder.setNegativeButton("Batal") { dialog, _ ->
-            dialog.cancel()
-        }
-
-        val dialog = builder.create()
-        dialog.setCancelable(false)
-        dialog.show()
     }
 }
