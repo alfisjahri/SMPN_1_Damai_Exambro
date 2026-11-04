@@ -27,8 +27,8 @@ android {
         applicationId = "com.smpn1damai.exambro"
         minSdk = 24
         targetSdk = 37
-        versionCode = 5
-        versionName = "0.1.0"
+        versionCode = 6
+        versionName = "0.1.1"
         ndk {
             abiFilters.add("armeabi-v7a")
             abiFilters.add("arm64-v8a")

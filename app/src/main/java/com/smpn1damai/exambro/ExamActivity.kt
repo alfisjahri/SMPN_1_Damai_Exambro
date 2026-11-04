@@ -184,26 +184,25 @@ class ExamActivity : AppCompatActivity() {
     private fun updateSignalUI(ping: Long) {
         val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val cap = cm.getNetworkCapabilities(cm.activeNetwork)
-        if (cap != null && ping != -1L) {
-            when {
-                ping < 100 -> {
-                    binding.dotOnline.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#22C55E"))
-                }
-                ping in 100..300 -> {
-                    binding.dotOnline.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#FFC107"))
-                    lastToast?.cancel()
-                    lastToast = Toast.makeText(this, "Jaringan kurang stabil (Ping: ${ping}ms)", Toast.LENGTH_SHORT).apply { show() }
-                }
-                else -> {
-                    binding.dotOnline.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#FF5252"))
-                    lastToast?.cancel()
-                    lastToast = Toast.makeText(this, "Koneksi buruk! Disarankan ganti jaringan.", Toast.LENGTH_SHORT).apply { show() }
-                }
-            }
-        } else {
-            binding.dotOnline.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#FF5252"))
+        // Tile koneksi dinamis: ikon wifi kalau tersambung wifi,
+        // ikon bar sinyal kalau lewat selular (atau jaringan lain).
+        val isWifi = cap?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true
+        binding.ivConnection.setImageResource(
+            if (isWifi) R.drawable.ic_wifi_fa else R.drawable.ic_signal_fa
+        )
+        // Warna ikut ping (ambang sama seperti dot lama):
+        // hijau <100ms, kuning 100-300ms, merah >300ms / tanpa koneksi.
+        val (colorHex, toastMsg) = when {
+            cap == null || ping == -1L -> "#FF5252" to "Tidak ada koneksi internet!"
+            ping < 100 -> "#22C55E" to null
+            ping in 100..300 -> "#FFC107" to "Jaringan kurang stabil (Ping: ${ping}ms)"
+            else -> "#FF5252" to "Koneksi buruk! Disarankan ganti jaringan."
+        }
+        binding.ivConnection.imageTintList =
+            ColorStateList.valueOf(Color.parseColor(colorHex))
+        if (toastMsg != null) {
             lastToast?.cancel()
-            lastToast = Toast.makeText(this, "Tidak ada koneksi internet!", Toast.LENGTH_SHORT).apply { show() }
+            lastToast = Toast.makeText(this, toastMsg, Toast.LENGTH_SHORT).apply { show() }
         }
     }
 
@@ -249,6 +248,11 @@ class ExamActivity : AppCompatActivity() {
                 if (level != -1 && scale != -1) {
                     val pct = level * 100 / scale
                     binding.tvBattery.text = "$pct%"
+                    // Isi hijau baterai ikut persentase (lebar dalam 36dp).
+                    val innerPx = (36 * resources.displayMetrics.density).toInt()
+                    val lp = binding.batteryFill.layoutParams
+                    lp.width = (innerPx * pct / 100).coerceAtLeast(1)
+                    binding.batteryFill.layoutParams = lp
                 }
             }
         }
