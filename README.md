@@ -2,12 +2,12 @@
 
 ![Android](https://img.shields.io/badge/Platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white)
 ![Kotlin](https://img.shields.io/badge/Language-Kotlin-7F52FF?style=flat-square&logo=kotlin&logoColor=white)
-![Version](https://img.shields.io/badge/Version-0.1.1-blue?style=flat-square)
+![Version](https://img.shields.io/badge/Version-0.1.0-blue?style=flat-square)
 ![Status](https://img.shields.io/badge/Status-Stable-success?style=flat-square)
 
 **SMPN 1 Damai Exambro** ini aplikasi *Exam Browser* Android yang saya buat khusus untuk menjaga keamanan dan kenyamanan ujian digital anak-anak di sekolah (pakai Google Forms atau platform ujian lain). Dibangun murni pakai **Kotlin Native**, jadi aplikasinya ringan banget, responsif, dan aman dari kecurangan.
 
-## 🔥 Fitur Unggulan (Update v0.1.1)
+## 🔥 Fitur Unggulan (Update v0.1.0)
 
 *   **Scan dari Galeri & Input Manual (BARU):** Kalau kamera HP anak-anak lagi bermasalah, sekarang bisa masukin soal ujian lewat tombol *Ketik Link* manual atau ambil gambar QR Code langsung dari *Galeri*.
 *   **Tombol Keluar Dinamis / Auto-Hide (BARU):** Tombol keluar (gembok) bakal otomatis sembunyi waktu siswa lagi *scroll* baca soal, jadi gak menutupi layar dan lebih nyaman.
@@ -16,8 +16,7 @@
 *   **Zero-Delay Loading:** Soal ujian langsung dimuat di *background*, jadi gak ada lagi layar putih nunggu *loading*.
 *   **Kiosk Mode (Pinned App):** Mengunci aplikasi di layar depan. Siswa gak bisa buka aplikasi lain atau ngecek notifikasi.
 *   **Anti-Screenshot & Screen Record:** Pakai sistem keamanan tingkat kernel (`FLAG_SECURE`), mustahil buat direkam atau di-screenshot.
-*   **Tampilan Neo (BARU):** Header ujian jadi 3 tile kotak tajam bergaya neubrutalism — Tile Jam kuning (digital saja), Tile Baterai putih (persen di dalam ikon, isi hijau ikut level baterai), dan Tile Koneksi dinamis (ikon wifi kalau tersambung wifi, ikon bar sinyal kalau lewat selular; warnanya ikut PING: hijau bagus, kuning kurang stabil, merah buruk/putus). Tombol gembok kini kotak tajam berbayangan keras, dialog sandi pengawas berkartu putih berbingkai hitam, dan layar scanner punya bingkai viewfinder oranye + tombol biru/oranye bergaya sama.
-*   **Smart Custom Status Bar:** Status bar bawaan HP ditimpa pakai indikator mandiri (sistem nge-ping otomatis ke `8.8.8.8` tiap 5 detik untuk ngecek kestabilan jaringan).
+*   **Smart Custom Status Bar:** Status bar bawaan HP ditimpa pakai indikator mandiri untuk nampilin Jam, Dot Sinyal (warnanya ikut PING), dan Ikon Baterai minimalis dengan persen di dalam (sistem nge-ping otomatis ke `8.8.8.8` tiap 5 detik untuk ngecek kestabilan jaringan).
 
 ## 📖 Panduan Buat Guru / Panitia
 
@@ -37,8 +36,8 @@ Mau pakai sandi keluar **`SANDIPILIHAN`**, maka ubah linknya jadi:
 ## 🚀 Cara Instalasi
 
 1. Buka halaman [Releases](../../releases) di repository ini.
-2. Download file APK versi terbaru (`ExamBro_v0.1.1.apk`).
-3. **PENTING:** Kalau di HP masih ada Exambro 1.3 atau versi debug, hapus dulu (*uninstall*) sebelum install — tanda tangan release baru, jadi tidak bisa timpa langsung. Pengguna 0.1.0 bisa update langsung ke 0.1.1 tanpa uninstall (tanda tangan sama).
+2. Download file APK versi terbaru (`ExamBro_v0.1.0.apk`).
+3. **PENTING:** Kalau di HP masih ada Exambro 1.3 atau versi debug, hapus dulu (*uninstall*) sebelum install 0.1.0 — tanda tangan release 0.1.0 baru, jadi tidak bisa timpa langsung.
 4. Install di HP Android siswa atau Tablet Sekolah (pastikan *Install from Unknown Sources* sudah diaktifkan).
 5. Kasih izin Akses Kamera waktu pertama kali dibuka.
 6. Aplikasi siap dipakai buat scan QR Code ujian!

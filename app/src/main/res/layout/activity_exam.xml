@@ -6,12 +6,13 @@
     android:background="#000000"
     android:fitsSystemWindows="true">
 
-    <!-- Header: 3 tile kotak tajam ala desain sharp-FA -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/headerBar"
         android:layout_width="match_parent"
-        android:layout_height="64dp"
+        android:layout_height="wrap_content"
         android:background="@color/exambro_dark"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
         android:paddingHorizontal="16dp">
 
         <ImageView
@@ -52,87 +53,59 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
+            android:gravity="end"
+            android:orientation="vertical"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
-            <!-- Tile jam: kuning, digital saja, tanpa ikon -->
-            <FrameLayout
-                android:layout_width="56dp"
-                android:layout_height="56dp"
-                android:layout_marginEnd="8dp"
-                android:background="@drawable/tile_yellow">
+            <TextClock
+                android:id="@+id/clock"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:format12Hour="hh:mm a"
+                android:format24Hour="HH:mm"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold" />
 
-                <TextClock
-                    android:id="@+id/clock"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:format12Hour="hh:mm a"
-                    android:format24Hour="HH:mm"
-                    android:textColor="#000000"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
-            </FrameLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
-            <!-- Tile baterai: putih, angka di DALAM ikon baterai -->
-            <FrameLayout
-                android:layout_width="56dp"
-                android:layout_height="56dp"
-                android:layout_marginEnd="8dp"
-                android:background="@drawable/tile_white">
+                <View
+                    android:id="@+id/dotOnline"
+                    android:layout_width="8dp"
+                    android:layout_height="8dp"
+                    android:background="@drawable/dot_shape" />
 
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                <FrameLayout
+                    android:layout_width="38dp"
+                    android:layout_height="18dp"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/battery_outline">
 
-                    <FrameLayout
-                        android:layout_width="40dp"
-                        android:layout_height="24dp"
-                        android:background="@drawable/battery_body_bg"
-                        android:padding="2dp">
+                    <TextView
+                        android:id="@+id/tvBattery"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:text="100%"
+                        android:textColor="#FFFFFF"
+                        android:textSize="9sp"
+                        android:textStyle="bold" />
+                </FrameLayout>
 
-                        <View
-                            android:id="@+id/batteryFill"
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:background="@color/exambro_green" />
-
-                        <TextView
-                            android:id="@+id/tvBattery"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:gravity="center"
-                            android:text="100%"
-                            android:textColor="#000000"
-                            android:textSize="10sp"
-                            android:textStyle="bold" />
-                    </FrameLayout>
-
-                    <View
-                        android:layout_width="4dp"
-                        android:layout_height="12dp"
-                        android:background="#000000" />
-                </LinearLayout>
-            </FrameLayout>
-
-            <!-- Tile koneksi: putih, ikon dinamis wifi/selular, warna ikut ping -->
-            <FrameLayout
-                android:layout_width="56dp"
-                android:layout_height="56dp"
-                android:background="@drawable/tile_white">
-
-                <ImageView
-                    android:id="@+id/ivConnection"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:layout_gravity="center"
-                    android:src="@drawable/ic_wifi_fa" />
-            </FrameLayout>
+                <View
+                    android:layout_width="3dp"
+                    android:layout_height="8dp"
+                    android:layout_marginStart="1dp"
+                    android:background="#FFFFFF" />
+            </LinearLayout>
         </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -143,141 +116,77 @@
         android:layout_below="@id/headerBar"
         android:visibility="visible" />
 
-    <!-- Tombol gembok: kotak tajam + bayangan keras (bukan lagi bulat) -->
-    <FrameLayout
+    <androidx.cardview.widget.CardView
         android:id="@+id/btnKeluarFloat"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="26dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="30dp"
         android:clickable="true"
-        android:focusable="true">
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackgroundBorderless"
+        app:cardBackgroundColor="@color/exambro_red"
+        app:cardCornerRadius="28dp"
+        app:cardElevation="8dp">
+        <ImageView
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_lock_modern"
+            app:tint="#FFFFFF" />
+    </androidx.cardview.widget.CardView>
 
-        <View
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:layout_gravity="bottom|end"
-            android:background="#000000" />
-
-        <FrameLayout
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:layout_gravity="top|start"
-            android:background="@drawable/btn_red_bg">
-
-            <ImageView
-                android:layout_width="28dp"
-                android:layout_height="28dp"
-                android:layout_gravity="center"
-                android:src="@drawable/ic_lock_fa"
-                android:tint="#FFFFFF" />
-        </FrameLayout>
-    </FrameLayout>
-
-    <!-- Dialog sandi pengawas: overlay 50% + kartu neo -->
     <RelativeLayout
         android:id="@+id/exitOverlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#80000000"
+        android:background="#E6000000"
         android:elevation="30dp"
         android:clickable="true"
         android:focusable="true"
         android:visibility="gone">
-
-        <FrameLayout
+        <LinearLayout
             android:layout_width="300dp"
             android:layout_height="wrap_content"
-            android:layout_centerInParent="true">
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginStart="4dp"
+            android:layout_centerInParent="true"
+            android:background="#FFFFFF"
+            android:orientation="vertical"
+            android:padding="25dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Sandi Pengawas"
+                android:textColor="#000000"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:background="#000000" />
-
+                android:text="Hanya pengawas yang memasukkan sandi."
+                android:textColor="@color/exambro_gray"
+                android:textSize="12sp" />
+            <EditText
+                android:id="@+id/etPassword"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:background="#F5F5F5"
+                android:hint="Sandi..."
+                android:inputType="textPassword"
+                android:padding="12dp"
+                android:textColor="#000000" />
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="4dp"
-                android:layout_marginBottom="4dp"
-                android:background="@drawable/dialog_card_bg"
-                android:orientation="vertical"
-                android:padding="25dp">
+                android:layout_marginTop="20dp"
+                android:gravity="end">
+                <Button android:id="@+id/btnBatalKeluar" style="?android:attr/borderlessButtonStyle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="BATAL" android:textColor="#757575" />
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <ImageView
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:src="@drawable/logo_sekolah" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="12dp"
-                        android:text="Sandi Pengawas"
-                        android:textColor="#000000"
-                        android:textSize="18sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="Hanya pengawas yang memasukkan sandi."
-                    android:textColor="@color/exambro_gray"
-                    android:textSize="12sp" />
-
-                <EditText
-                    android:id="@+id/etPassword"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="15dp"
-                    android:background="@drawable/field_bg"
-                    android:hint="Sandi..."
-                    android:inputType="textPassword"
-                    android:padding="12dp"
-                    android:textColor="#000000" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp"
-                    android:gravity="end">
-
-                    <Button
-                        android:id="@+id/btnBatalKeluar"
-                        android:layout_width="100dp"
-                        android:layout_height="44dp"
-                        android:layout_marginEnd="8dp"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
-                        android:background="@drawable/btn_pink"
-                        android:text="BATAL"
-                        android:textColor="#000000"
-                        android:textStyle="bold" />
-
-                    <Button
-                        android:id="@+id/btnKonfirmasiKeluar"
-                        android:layout_width="100dp"
-                        android:layout_height="44dp"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
-                        android:background="@drawable/btn_orange"
-                        android:text="BUKA"
-                        android:textColor="#FFFFFF"
-                        android:textStyle="bold" />
-                </LinearLayout>
+                <Button android:id="@+id/btnKonfirmasiKeluar" android:layout_width="wrap_content" android:layout_height="wrap_content" android:backgroundTint="@color/exambro_orange" android:textColor="#FFFFFF" android:text="BUKA" />
             </LinearLayout>
-        </FrameLayout>
+        </LinearLayout>
     </RelativeLayout>
 </RelativeLayout>

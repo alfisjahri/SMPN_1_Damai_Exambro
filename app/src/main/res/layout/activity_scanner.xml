@@ -50,24 +50,12 @@
         android:layout_height="match_parent"
         android:layout_below="@id/headerBar" />
 
-    <!-- Bingkai viewfinder ala desain: border oranye di atas kamera -->
-    <View
-        android:id="@+id/viewfinderFrame"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/headerBar"
-        android:layout_above="@id/noteText"
-        android:layout_marginHorizontal="24dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="12dp"
-        android:background="@drawable/viewfinder_frame" />
-
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:text="Arahkan kamera ke QR Ujian"
-        android:textColor="@color/exambro_yellow"
+        android:text="Arahkan kamera ke QR Code Ujian"
+        android:textColor="#FFFFFF"
         android:textSize="16sp"
         android:textStyle="bold"
         android:shadowColor="#000000"
@@ -75,83 +63,37 @@
         android:shadowDy="2"
         android:shadowRadius="4" />
 
-    <TextView
-        android:id="@+id/noteText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/buttonBar"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="8dp"
-        android:text="QR hanya ditampilkan pengawas di kelas"
-        android:textColor="#FFFFFF"
-        android:textSize="13sp"
-        android:shadowColor="#000000"
-        android:shadowDx="2"
-        android:shadowDy="2"
-        android:shadowRadius="4" />
-
     <LinearLayout
-        android:id="@+id/buttonBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_marginBottom="45dp"
         android:orientation="horizontal"
         android:padding="16dp"
-        android:weightSum="2">
+        android:background="#B3000000"
+        android:weightSum="2"
+        android:elevation="10dp">
 
-        <FrameLayout
+        <Button
+            android:id="@+id/btnGaleri"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="55dp"
             android:layout_weight="1"
-            android:layout_marginEnd="8dp">
+            android:layout_marginEnd="8dp"
+            android:text="Dari Galeri"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="@color/exambro_dark" />
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="55dp"
-                android:layout_marginStart="4dp"
-                android:layout_marginTop="4dp"
-                android:background="#000000" />
-
-            <Button
-                android:id="@+id/btnGaleri"
-                android:layout_width="match_parent"
-                android:layout_height="55dp"
-                android:layout_marginEnd="4dp"
-                android:layout_marginBottom="4dp"
-                android:background="@drawable/btn_blue"
-                android:foreground="?attr/selectableItemBackground"
-                android:text="DARI GALERI"
-                android:textStyle="bold"
-                android:textSize="16sp"
-                android:textColor="#FFFFFF" />
-        </FrameLayout>
-
-        <FrameLayout
+        <Button
+            android:id="@+id/btnManual"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="55dp"
             android:layout_weight="1"
-            android:layout_marginStart="8dp">
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="55dp"
-                android:layout_marginStart="4dp"
-                android:layout_marginTop="4dp"
-                android:background="#000000" />
-
-            <Button
-                android:id="@+id/btnManual"
-                android:layout_width="match_parent"
-                android:layout_height="55dp"
-                android:layout_marginEnd="4dp"
-                android:layout_marginBottom="4dp"
-                android:background="@drawable/btn_orange"
-                android:foreground="?attr/selectableItemBackground"
-                android:text="KETIK LINK"
-                android:textStyle="bold"
-                android:textSize="16sp"
-                android:textColor="#FFFFFF" />
-        </FrameLayout>
+            android:layout_marginStart="8dp"
+            android:text="Ketik Link"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="@color/exambro_orange" />
     </LinearLayout>
 </RelativeLayout>
